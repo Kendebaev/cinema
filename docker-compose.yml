@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    # Передаем переменные окружения напрямую в контейнер
+    environment:
+      - MONGO_URI=mongodb://db:27017/cinema
+      - SESSION_SECRET=cinema-secret-key-2024
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    deploy:
+      replicas: 2
+    depends_on:
+      - db
+
+  db:
+    image: mongo:latest
+    container_name: mongodb_container
+    volumes:
+      - mongo_data:/data/db
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # Убедись, что этот файл есть в папке!
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+
+volumes:
+  mongo_data:

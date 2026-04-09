@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 
 // MongoDB for everything
-const MONGO_URL = process.env.MONGO_URI || 'mongodb://localhost:27017';
+const MONGO_URL = process.env.MONGO_URI;
 const MONGO_DB_NAME = 'cinema';
 const SEATS_COLLECTION = 'seats';
 const MOVIES_COLLECTION = 'movies';
@@ -12,7 +12,7 @@ const USERS_COLLECTION = 'users';
 let mongoClient = null;
 let mongoDb = null;
 
-// Initialize MongoDB
+// Initialize MongoDB 
 async function initializeDatabase() {
   try {
     mongoClient = new MongoClient(MONGO_URL);
@@ -23,8 +23,8 @@ async function initializeDatabase() {
 
     console.log('Connected to MongoDB at:', MONGO_URL);
 
-    // Collections are already initialized in the database
-    // Removed automatic initialization to prevent overwriting/duplication
+    // Collections are already initialized in the database 234
+   
 
     return mongoDb;
   } catch (err) {
@@ -226,19 +226,20 @@ async function deleteUser(userId) {
   }
 }
 
-// ===== USER OPERATIONS =====
+// USER OPERATIONS 
 
 // Create a new user with hashed password
 async function createUser(username, password) {
   try {
     const collection = mongoDb.collection(USERS_COLLECTION);
 
-    // Hash password with bcrypt (10 salt rounds)
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await collection.insertOne({
       username: username.trim().toLowerCase(),
       password: hashedPassword,
+      role: 'user', // Явно указываем роль обычного пользователя
       createdAt: new Date()
     });
 
