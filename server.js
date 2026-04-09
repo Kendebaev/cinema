@@ -15,6 +15,15 @@ const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
+// Prometheus Metrics
+const client = require('prom-client');
+client.collectDefaultMetrics(); // Собирает стандартные метрики (CPU, Memory, Event Loop)
+
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', client.register.contentType);
+    res.end(await client.register.metrics());
+});
+
 const MONGO_URL = process.env.MONGO_URI;
 
 // View engine
