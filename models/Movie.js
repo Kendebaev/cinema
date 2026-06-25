@@ -66,6 +66,44 @@ class Movie {
             .toArray();
     }
 
+    static async findFiltered({ search, genre, rating, page = 1, limit = 10, sortBy = '' }) {
+        const query = {};
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { genre: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+        if (genre) {
+            query.genre = { $regex: genre, $options: 'i' };
+        }
+        if (rating) {
+            query.rating = { $gte: parseFloat(rating) };
+        }
+
+        const skip = (page - 1) * limit;
+        let sortOption = {};
+        if (sortBy === 'rating') {
+            sortOption = { rating: -1 };
+        } else if (sortBy === 'year_desc') {
+            sortOption = { releaseDate: -1 };
+        } else {
+            sortOption = { createdAt: -1 };
+        }
+
+        const items = await this.getCollection()
+            .find(query)
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+        const totalItems = await this.getCollection().countDocuments(query);
+
+        return { items, totalItems };
+    }
+
     static async count() {
         return await this.getCollection().countDocuments();
     }

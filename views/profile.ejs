@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Cinema</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .profile-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-header h2 {
+            color: #ff0000;
+            margin-bottom: 5px;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-group {
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .info-group label {
+            display: block;
+            font-size: 0.85em;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .info-group p {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+        }
+
+        .info-group p span.role-tag {
+            background: #ff0000;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
+
+        .bookings-section {
+            margin-top: 2rem;
+        }
+
+        .bookings-section h3 {
+            color: #ff0000;
+            border-bottom: 2px solid rgba(255, 0, 0, 0.3);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .booking-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .booking-card:hover {
+            border-color: rgba(255, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .booking-info {
+            color: #ddd;
+        }
+
+        .booking-info strong {
+            color: #ff0000;
+        }
+
+        .booking-info .booking-detail {
+            margin: 3px 0;
+            font-size: 0.95em;
+        }
+
+        .btn-cancel-booking {
+            padding: 8px 16px;
+            background: #cc0000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85em;
+        }
+
+        .btn-cancel-booking:hover {
+            background: #ff3333;
+            transform: scale(1.03);
+        }
+
+        .no-bookings {
+            text-align: center;
+            color: #999;
+            padding: 30px 10px;
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 6px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .no-bookings a {
+            color: #ff0000;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .no-bookings a:hover {
+            text-decoration: underline;
+        }
+
+        .danger-zone {
+            margin-top: 3rem;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            background: rgba(255, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .danger-zone h4 {
+            color: #ff3333;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .danger-zone p {
+            font-size: 0.9em;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+
+        .btn-delete-account {
+            padding: 10px 20px;
+            background: transparent;
+            color: #ff3333;
+            border: 2px solid #ff3333;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-delete-account:hover {
+            background: #ff3333;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/header') %>
+
+        <main>
+            <div class="profile-container">
+                <div class="profile-header">
+                    <h2>👤 Account Dashboard</h2>
+                    <p>Manage your account settings and cinema bookings</p>
+                </div>
+
+                <div class="profile-card">
+                    <div class="profile-info-grid">
+                        <div class="info-group">
+                            <label>Username</label>
+                            <p><%= user.username %></p>
+                        </div>
+                        <div class="info-group">
+                            <label>Email Address</label>
+                            <p><%= user.email %></p>
+                        </div>
+                        <div class="info-group">
+                            <label>Phone Number</label>
+                            <p><%= user.phone %></p>
+                        </div>
+                        <div class="info-group">
+                            <label>Role</label>
+                            <p>
+                                <span class="role-tag"><%= user.role || 'User' %></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bookings-section">
+                    <h3>🎫 Active Bookings</h3>
+                    <% if (bookings && bookings.length > 0) { %>
+                        <% bookings.forEach(booking => { %>
+                            <div class="booking-card">
+                                <div class="booking-info">
+                                    <div class="booking-detail">
+                                        <strong>Room:</strong> Room <%= booking.roomNumber %>
+                                    </div>
+                                    <div class="booking-detail">
+                                        <strong>Seat:</strong> #<%= booking.seatNumber %>
+                                    </div>
+                                    <div class="booking-detail">
+                                        <strong>Booked Under:</strong> <%= booking.ownerName %>
+                                    </div>
+                                </div>
+                                <form action="/my-bookings/cancel" method="POST"
+                                    onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                    <input type="hidden" name="roomId" value="<%= booking.roomId %>">
+                                    <input type="hidden" name="seatNumber" value="<%= booking.seatNumber %>">
+                                    <button type="submit" class="btn-cancel-booking">✗ Cancel Booking</button>
+                                </form>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="no-bookings">
+                            <p>You do not have any active bookings at the moment.</p>
+                            <p><a href="/buy">Browse movies & book a seat now →</a></p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="danger-zone">
+                    <h4>⚠️ Danger Zone</h4>
+                    <p>Once you delete your account, there is no going back. All of your bookings will remain active but will no longer be associated with your account.</p>
+                    <form action="/delete-account" method="POST" onsubmit="return confirm('Are you absolutely sure you want to delete your account? This action is permanent.');">
+                        <button type="submit" class="btn-delete-account">Delete My Account</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+</body>
+
+</html>

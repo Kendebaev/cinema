@@ -1,10 +1,12 @@
 require('dotenv').config();
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoStore = require('connect-mongo').default || require('connect-mongo');
 const path = require('path');
 const { connectDB, closeDB } = require('./config/db');
+const { authenticateJWT } = require('./middleware/authMiddleware');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -12,12 +14,13 @@ const movieRoutes = require('./routes/movieRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const resourceRoutes = require('./routes/resourceRoutes');
 
 const app = express();
 
 // Prometheus Metrics
 const client = require('prom-client');
-client.collectDefaultMetrics(); // Собирает стандартные метрики (CPU, Memory, Event Loop)
+client.collectDefaultMetrics();
 
 app.get('/metrics', async (req, res) => {
     res.set('Content-Type', client.register.contentType);
@@ -34,6 +37,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser()); // Enable cookie parsing for JWT
 
 // Custom logger middleware
 app.use((req, res, next) => {
@@ -41,7 +45,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session configuration
+// Session configuration (kept for backwards compatibility with any stores)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'cinema-secret-key-2024',
   resave: false,
@@ -58,17 +62,15 @@ app.use(session({
   }
 }));
 
-// Make user available to all views
+// Apply JWT authentication globally
+app.use(authenticateJWT);
+
+// Make user available to EJS views
 app.use((req, res, next) => {
-  if (req.session && req.session.user) {
+  if (req.user) {
+    res.locals.user = req.user;
+  } else if (req.session && req.session.user) {
     res.locals.user = req.session.user;
-  } else if (req.session && req.session.userId) {
-    // Backward compatibility with old session format
-    res.locals.user = {
-      id: req.session.userId,
-      username: req.session.username,
-      role: 'user'
-    };
   } else {
     res.locals.user = null;
   }
@@ -91,28 +93,32 @@ app.use('/', movieRoutes);
 app.use('/', bookingRoutes);
 app.use('/', contactRoutes);
 app.use('/admin', adminRoutes);
+app.use('/', resourceRoutes); // Expose /resource and /resource/:id
 
 // API Info endpoint
 app.get('/api/info', (req, res) => {
   res.json({
     project: 'Cinema Ticket Booking System',
     description: 'Backend API for cinema seat booking with MongoDB',
-    version: '2.0.0',
-    entity: 'Cinema Seats',
+    version: '2.5.0',
+    entity: 'Cinema Seats / Movies',
     database: 'MongoDB',
     routes: {
-      pages: ['/', '/about', '/contact', '/search', '/movies', '/buy', '/my-bookings', '/admin/dashboard'],
+      pages: ['/', '/about', '/contact', '/search', '/movies', '/buy', '/profile', '/my-bookings', '/admin/dashboard'],
       api: {
-        'GET /api/seats': 'Get all rooms with seats',
-        'GET /api/seats/:roomId': 'Get specific room (room1-room5)',
-        'POST /api/seats/book': 'Book a ticket (PROTECTED)',
-        'POST /api/seats/manage-booking': 'Manage booking (PROTECTED)'
+        'POST /register': 'Register a new user (JWT)',
+        'POST /login': 'Log in and get JWT token',
+        'GET /profile': 'Retrieve user profile (JWT)',
+        'GET /resource': 'Get movie resources (supports search, genre filter, pagination)',
+        'POST /resource': 'Create a new movie resource (JWT Admin)',
+        'PUT /resource/:id': 'Update a movie resource (JWT Admin)',
+        'DELETE /resource/:id': 'Delete a movie resource (JWT Admin)'
       }
     }
   });
 });
 
-// 404 handler for API routes
+// 404 handler for API/Resource routes
 app.use('/api', (req, res) => {
   res.status(404).json({
     success: false,
@@ -121,9 +127,37 @@ app.use('/api', (req, res) => {
   });
 });
 
+app.use('/resource', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Resource endpoint not found',
+    statusCode: 404
+  });
+});
+
 // 404 handler for page routes
 app.use((req, res) => {
   res.status(404).render('404');
+});
+
+// ===== GLOBAL ERROR HANDLING MIDDLEWARE =====
+app.use((err, req, res, next) => {
+  console.error('[Global Error Handler]:', err);
+  
+  const statusCode = err.statusCode || err.status || 500;
+  const message = err.message || 'Internal Server Error';
+
+  // Return JSON for APIs or XHR requests
+  if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/resource') || req.xhr || req.headers.accept?.includes('json')) {
+    return res.status(statusCode).json({
+      success: false,
+      message,
+      statusCode
+    });
+  }
+
+  // Render 404 page for standard views (or you can create a custom error page)
+  res.status(statusCode).render('404');
 });
 
 // ===== START SERVER =====

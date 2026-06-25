@@ -15,16 +15,24 @@ class User {
         });
     }
 
+    static async findByEmail(email) {
+        return await this.getCollection().findOne({
+            email: email.trim().toLowerCase()
+        });
+    }
+
     static async findById(id) {
         return await this.getCollection().findOne({
             _id: new ObjectId(id)
         });
     }
 
-    static async create(username, password) {
+    static async create(username, email, phone, password) {
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await this.getCollection().insertOne({
             username: username.trim().toLowerCase(),
+            email: email.trim().toLowerCase(),
+            phone: phone.trim(),
             password: hashedPassword,
             role: 'user',
             createdAt: new Date()
