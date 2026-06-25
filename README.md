@@ -126,7 +126,7 @@ The application reads the `PORT` environment variable at runtime, allowing hosti
 
 ## Deployed URL
 
-[Your deployed application URL will appear here]
+https://webbackend-6qvk.onrender.com/login
 
 ## Troubleshooting
 
@@ -143,10 +143,4 @@ The application reads the `PORT` environment variable at runtime, allowing hosti
 - Run `npm install` to ensure all dependencies are installed
 - Clear npm cache: `npm cache clean --force`
 
-## License
 
-This project is open source and available under the MIT License.
-
-## Contact & Support
-
-For issues or questions, please refer to the project documentation or contact the development team.
